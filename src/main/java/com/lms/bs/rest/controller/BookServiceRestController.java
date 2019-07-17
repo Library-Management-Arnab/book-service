@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lms.bs.rest.model.Book;
+import com.lms.bs.rest.model.json.BookJson;
 import com.lms.bs.rest.service.BookService;
 
 @RestController
@@ -32,9 +33,9 @@ public class BookServiceRestController {
 		return new ResponseEntity<>(bookService.getBookById(bookId), HttpStatus.OK);
 	}
 
-	@PostMapping(value = "/books/{bookId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> addBook(@PathVariable("bookId") String bookId, @RequestBody Book book) {
-		return new ResponseEntity<>(bookService.addBook(book), HttpStatus.CREATED);
+	@PostMapping(value = "/books", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<Object> addBook(@RequestBody BookJson bookJson) {
+		return new ResponseEntity<>(bookService.addBook(bookJson.getBook(), bookJson.getUser()), HttpStatus.CREATED);
 	}
 
 	@DeleteMapping(value = "/books/{bookId}")
