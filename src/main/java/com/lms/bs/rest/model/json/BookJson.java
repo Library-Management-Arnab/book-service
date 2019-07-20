@@ -1,7 +1,7 @@
 package com.lms.bs.rest.model.json;
 
 import com.lms.bs.rest.model.Book;
-import com.lms.bs.rest.model.UserData;
+import com.lms.svc.common.model.UserData;
 
 import lombok.Data;
 
