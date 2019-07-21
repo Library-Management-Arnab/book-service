@@ -11,6 +11,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.lms.svc.common.constants.ApplicationCommonConstants;
+
 import lombok.Data;
 
 @Data
@@ -18,7 +20,7 @@ import lombok.Data;
 @Table(name = "book")
 public class Book implements Serializable {
 	public Book() {
-		this.bookId = "BK" + System.currentTimeMillis();
+		this.bookId = "BK" + (System.currentTimeMillis() + ApplicationCommonConstants.RANDOM.nextInt());
 	}
 
 	private static final long serialVersionUID = -943929819823L;
@@ -54,6 +56,10 @@ public class Book implements Serializable {
 	@OneToOne
 	@JoinColumn(name = "lang_code", referencedColumnName = "lang_code")
 	private Language language;
+	
+	@OneToOne
+	@JoinColumn(name = "book_status_code", referencedColumnName = "book_status_code")
+	private BookStatus status;
 
 	@Override
 	public boolean equals(Object obj) {

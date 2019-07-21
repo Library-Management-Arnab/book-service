@@ -11,6 +11,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.lms.svc.common.constants.ApplicationCommonConstants;
 
 import lombok.Data;
 
@@ -21,7 +22,7 @@ public class Author implements Serializable {
 	private static final long serialVersionUID = -6276686600843230458L;
 
 	public Author() {
-		this.authorId = "AU" + System.currentTimeMillis();
+		this.authorId = "AU" + (System.currentTimeMillis() + ApplicationCommonConstants.RANDOM.nextInt());
 	}
 
 	@Id
