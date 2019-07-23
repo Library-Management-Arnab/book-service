@@ -2,8 +2,6 @@ package com.lms.bs.rest.model;
 
 import java.io.Serializable;
 
-import com.lms.svc.common.model.User;
-
 import lombok.Data;
 
 @Data

@@ -1,11 +1,10 @@
 package com.lms.bs.rest.transformer;
 
-import com.lms.bs.rest.model.entity.Book;
-import com.lms.bs.rest.model.entity.BookStatus;
-import com.lms.bs.rest.model.json.BookJson;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.lms.bs.rest.model.entity.Book;
+import com.lms.bs.rest.model.json.BookJson;
 
 public final class BookTransformer {
 

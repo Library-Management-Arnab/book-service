@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.lms.bs.rest.model.entity.Book;
 import com.lms.bs.rest.model.UploadCsvRequest;
 import com.lms.bs.rest.model.json.BookJson;
 import com.lms.bs.rest.service.BookService;

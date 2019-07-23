@@ -26,23 +26,20 @@ import java.util.Optional;
 @AllArgsConstructor
 public class BookService {
 	private BookRepository bookRepository;
-	// private UserServiceRepository userServiceRepository;
 	private AuthorRepository authorRepository;
 	private BookStatusRepository bookStatusRepository;
 
-	public List<Book> getAllBooks() {
-		return bookRepository.findAll();
+	public List<BookJson> getAllBooks() {
+		List<Book> allBooks = bookRepository.findAll();
+		return BookTransformer.transformBookListToBookJsonList(allBooks);
 	}
 
-	public Book getBookById(String bookId) {
-		Optional<Book> searchResult = bookRepository.findById(bookId);
-		if (searchResult.isPresent()) {
-			return searchResult.get();
-		}
-		throw new NoSuchBookException();
+	public BookJson getBookById(String bookId) {
+		return BookTransformer.transformBookToBookJson(searchBookById(bookId));
 	}
 
 	public BookJson addBook(BookJson json) {
+		json.setAvailability("Available");
 		Book addedBook = doAddBook(BookTransformer.transformBookJsonToBook(json));
 		return BookTransformer.transformBookToBookJson(addedBook);
 	}
@@ -50,7 +47,7 @@ public class BookService {
 	public BookJson updateBook(String bookId, BookJson bookJson) {
 	    Book requestedBook = BookTransformer.transformBookJsonToBook(bookJson);
 
-		Book existing = getBookById(bookId);
+		Book existing = searchBookById(bookId);
         requestedBook.setStockAvailable(existing.getStockAvailable());
 		BookStatus status = requestedBook.getStatus();
 		Optional<BookStatus> currentStatus = bookStatusRepository.findByStatus(status.getStatus());
@@ -65,7 +62,7 @@ public class BookService {
 	}
 
 	public void deleteBook(String bookId) {
-		Book existing = getBookById(bookId);
+		Book existing = searchBookById(bookId);
 		setBookStatus(existing, ApplicationCommonConstants.BOOK_STATUS_CODE_DELETED);
 
 		bookRepository.save(existing);
@@ -94,47 +91,32 @@ public class BookService {
 		}
 
 	}
-
+	
+	private Book searchBookById(String bookId) {
+		Optional<Book> searchResult = bookRepository.findById(bookId);
+		if (searchResult.isPresent()) {
+			return searchResult.get();
+		}
+		throw new NoSuchBookException();
+	}
+	
 	private Book doAddBook(Book book) {
-//		AuthenticatedUser authenticatedUser = null;
-		
-		// authenticatedUser = userServiceRepository.authenticate(user);
-		
-//		authenticatedUser = new AuthenticatedUser();
-//		authenticatedUser.setUserName("");
-//		authenticatedUser.setUserStatus(ApplicationCommonConstants.USER_STATUS_CODE_ACTIVE);
-//		authenticatedUser.setUserRight(ApplicationCommonConstants.USER_RIGHT_A);
-
-//		if (!authenticatedUser.isActive()) {
-//			throw new InactiveUserException();
-//		}
-//		if (authenticatedUser.isAdmin()) {
-			prepareBookForAdd(book);
-			return bookRepository.save(book);
-//		}
-//		throw new InsufficientPrivilageException();
+		prepareBookForAdd(book);
+		return bookRepository.save(book);
 	}
 
 	private List<BookJson> addMultipleBooks(List<Book> booksFromCsv) {
-//		AuthenticatedUser authenticatedUser = userServiceRepository.authenticate(user);
-//		if (!authenticatedUser.isActive()) {
-//			throw new InactiveUserException();
-//		}
-
-//		if (authenticatedUser.isAdmin()) {
-			List<Book> toBeAdded = new ArrayList<>();
-			booksFromCsv.forEach(book -> {
-				try {
-					prepareBookForAdd(book);
-					toBeAdded.add(book);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			});
-        List<Book> savedBooks = bookRepository.saveAll(toBeAdded);
-			return BookTransformer.transformBookListToBookJsonList(savedBooks);
-//		}
-//		throw new InsufficientPrivilageException();
+		List<Book> toBeAdded = new ArrayList<>();
+		booksFromCsv.forEach(book -> {
+			try {
+				prepareBookForAdd(book);
+				toBeAdded.add(book);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+		List<Book> savedBooks = bookRepository.saveAll(toBeAdded);
+		return BookTransformer.transformBookListToBookJsonList(savedBooks);
 	}
 	
 	private void prepareBookForAdd(Book book) {
@@ -165,7 +147,7 @@ public class BookService {
 	}
 
 	private BookJson updateCount(String bookId, int countToUpdate) {
-		Book existing = getBookById(bookId);
+		Book existing = searchBookById(bookId);
 		int currentStock = existing.getStockAvailable();
 		int remainingStock = currentStock + countToUpdate;
 		remainingStock = remainingStock < 1 ? 0 : remainingStock;
@@ -182,11 +164,7 @@ public class BookService {
 	}
 
 	private void throwExceptionForInvalidStatus(BookStatus status) {
-		if (status == null) {
-			throw new InvalidFieldValueException("Book Status");
-		} else {
-			List<String> validStatuses = bookStatusRepository.findAllStatus();
-			throw new InvalidFieldValueException("Book Status", status.getStatus(), validStatuses);
-		}
+		List<String> validStatuses = bookStatusRepository.findAllStatus();
+		throw new InvalidFieldValueException("Book Status", status.getStatus(), validStatuses);
 	}
 }

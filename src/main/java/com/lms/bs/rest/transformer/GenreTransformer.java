@@ -40,7 +40,7 @@ public final class GenreTransformer {
         static String getDescriptionFromGenre(Genre genre) {
             String description = null;
             for(GenreDBMapping genreDBMapping : GenreDBMapping.values()) {
-                if(genre.getGenreCode().equalsIgnoreCase(genreDBMapping.clientGenre)) {
+                if(genreDBMapping.dbCode.equalsIgnoreCase(genre.getGenreCode())) {
                     description = genreDBMapping.clientGenre;
                 }
             }

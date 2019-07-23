@@ -38,8 +38,9 @@ public final class BookStatusTransformer {
         static BookStatus getBookStatusFromClientStatus(String clientStatus) {
             BookStatus bookStatus = new BookStatus();
             for(BookStatusDBCode statusDBCode : BookStatusDBCode.values()) {
-                if(clientStatus.equalsIgnoreCase(statusDBCode.clientStatus)) {
+                if(statusDBCode.clientStatus.equalsIgnoreCase(clientStatus)) {
                     bookStatus.setStatusCode(statusDBCode.dbCode);
+                    bookStatus.setStatus(statusDBCode.clientStatus);
                     break;
                 }
             }
