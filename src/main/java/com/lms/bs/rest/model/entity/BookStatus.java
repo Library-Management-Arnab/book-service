@@ -1,4 +1,4 @@
-package com.lms.bs.rest.model;
+package com.lms.bs.rest.model.entity;
 
 import java.io.Serializable;
 

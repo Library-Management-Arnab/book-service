@@ -1,20 +1,16 @@
 package com.lms.bs.rest.service.util;
 
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.lms.bs.rest.model.entity.Author;
+import com.lms.bs.rest.model.entity.Book;
+import com.lms.bs.rest.transformer.GenreTransformer;
+import com.lms.bs.rest.transformer.LanguageTransformer;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 
-import com.lms.bs.rest.model.Author;
-import com.lms.bs.rest.model.Book;
-import com.lms.bs.rest.model.Language;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CSVUtil {
 	
@@ -36,7 +32,7 @@ public class CSVUtil {
 			author.setAuthorName(trim(csvRecord.get("Author")));
 			book.setAuthor(author);
 			
-			book.setDescription(trim(csvRecord.get("Description")));
+			book.setBookDescription(trim(csvRecord.get("Description")));
 			
 			String cellValue = trim(csvRecord.get("StockAvailable"));
 			int stockAvailable = cellValue == null || !cellValue.matches("\\d") ? 0 : Integer.parseInt(cellValue);
@@ -44,12 +40,10 @@ public class CSVUtil {
 			
 			book.setWikiUrl(trim(csvRecord.get("WikiUrl")));
 			book.setImageUrl(trim(csvRecord.get("ImageUrl")));
-			book.setGenere(trim(csvRecord.get("Genere")));
-			
-			Language language = new Language();
-			language.setLangCode(trim(csvRecord.get("Language")));
-			book.setLanguage(language );
-			
+
+			book.setGenre(GenreTransformer.getGenre(trim(csvRecord.get("Genre"))));
+			book.setLanguage(LanguageTransformer.getLanguageFromClientLanguage(trim(csvRecord.get("Language"))));
+
 			books.add(book);
 		});
 		csvParser.close();

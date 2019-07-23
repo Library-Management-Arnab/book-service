@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.lms.bs.rest.model.BookStatus;
+import com.lms.bs.rest.model.entity.BookStatus;
 
 @Repository
 public interface BookStatusRepository extends JpaRepository<BookStatus, String> {

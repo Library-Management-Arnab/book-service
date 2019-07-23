@@ -1,4 +1,4 @@
-package com.lms.bs.rest.model;
+package com.lms.bs.rest.model.entity;
 
 import java.io.Serializable;
 
@@ -20,19 +20,19 @@ import lombok.Data;
 @Table(name = "book")
 public class Book implements Serializable {
 	public Book() {
-		this.bookId = "BK" + (System.currentTimeMillis() + ApplicationCommonConstants.RANDOM.nextInt());
+		this.bookId = "BK" + ApplicationCommonConstants.generateId();
 	}
 
 	private static final long serialVersionUID = -943929819823L;
 	@Id
-	@Column(name = "book_id", length = 20)
+	@Column(name = "book_id", length = 30)
 	private String bookId;
 
 	@Column(length = 150, nullable = false)
 	private String bookName;
 
 	@Column(length = 3000, nullable = false)
-	private String description;
+	private String bookDescription;
 
 	@Column(length = 30, nullable = false)
 	private String stockDate;
@@ -46,8 +46,9 @@ public class Book implements Serializable {
 	@Column(length = 300)
 	private String imageUrl;
 
-	@Column(length = 500)
-	private String genere;
+	@OneToOne
+	@JoinColumn(name = "genre_code", referencedColumnName = "genre_code")
+	private Genre genre;
 	
 	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name = "author_id")

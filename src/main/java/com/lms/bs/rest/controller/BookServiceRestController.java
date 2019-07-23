@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.lms.bs.rest.model.Book;
+import com.lms.bs.rest.model.entity.Book;
 import com.lms.bs.rest.model.UploadCsvRequest;
 import com.lms.bs.rest.model.json.BookJson;
 import com.lms.bs.rest.service.BookService;
@@ -48,8 +48,8 @@ public class BookServiceRestController {
 	}
 
 	@PutMapping(value = "/{bookId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> updateBook(@PathVariable("bookId") String bookId, @RequestBody Book book) {
-		return new ResponseEntity<>(bookService.updateBook(bookId, book), HttpStatus.OK);
+	public ResponseEntity<Object> updateBook(@PathVariable("bookId") String bookId, @RequestBody BookJson bookJson) {
+		return new ResponseEntity<>(bookService.updateBook(bookId, bookJson), HttpStatus.OK);
 	}
 
 	@PostMapping(value = "/upload", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

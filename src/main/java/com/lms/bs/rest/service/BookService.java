@@ -1,38 +1,32 @@
 package com.lms.bs.rest.service;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.stereotype.Service;
-
 import com.lms.bs.rest.exception.DuplicateBookException;
 import com.lms.bs.rest.exception.NoSuchBookException;
-import com.lms.bs.rest.model.Author;
-import com.lms.bs.rest.model.Book;
-import com.lms.bs.rest.model.BookStatus;
 import com.lms.bs.rest.model.UploadCsvRequest;
+import com.lms.bs.rest.model.entity.Author;
+import com.lms.bs.rest.model.entity.Book;
+import com.lms.bs.rest.model.entity.BookStatus;
 import com.lms.bs.rest.model.json.BookJson;
 import com.lms.bs.rest.repository.AuthorRepository;
 import com.lms.bs.rest.repository.BookRepository;
 import com.lms.bs.rest.repository.BookStatusRepository;
 import com.lms.bs.rest.service.util.CSVUtil;
+import com.lms.bs.rest.transformer.BookTransformer;
 import com.lms.svc.common.constants.ApplicationCommonConstants;
-import com.lms.svc.common.exception.InactiveUserException;
-import com.lms.svc.common.exception.InsufficientPrivilageException;
 import com.lms.svc.common.exception.InvalidFieldValueException;
-import com.lms.svc.common.model.AuthenticatedUser;
-import com.lms.svc.common.model.User;
-import com.lms.svc.common.repository.UserServiceRepository;
-
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class BookService {
 	private BookRepository bookRepository;
-	private UserServiceRepository userServiceRepository;
+	// private UserServiceRepository userServiceRepository;
 	private AuthorRepository authorRepository;
 	private BookStatusRepository bookStatusRepository;
 
@@ -48,23 +42,26 @@ public class BookService {
 		throw new NoSuchBookException();
 	}
 
-	public Book addBook(BookJson json) {
-		return addBook(json.getBook(), json.getUser());
+	public BookJson addBook(BookJson json) {
+		Book addedBook = doAddBook(BookTransformer.transformBookJsonToBook(json));
+		return BookTransformer.transformBookToBookJson(addedBook);
 	}
 
-	public Book updateBook(String bookId, Book book) {
+	public BookJson updateBook(String bookId, BookJson bookJson) {
+	    Book requestedBook = BookTransformer.transformBookJsonToBook(bookJson);
+
 		Book existing = getBookById(bookId);
-		book.setStockAvailable(existing.getStockAvailable());
-		BookStatus status = book.getStatus();
+        requestedBook.setStockAvailable(existing.getStockAvailable());
+		BookStatus status = requestedBook.getStatus();
 		Optional<BookStatus> currentStatus = bookStatusRepository.findByStatus(status.getStatus());
 
 		if (currentStatus.isPresent()) {
-			book.setStatus(currentStatus.get());
+            requestedBook.setStatus(currentStatus.get());
 		} else {
-			throwExceptionForInvalidStatus(book.getStatus());
+			throwExceptionForInvalidStatus(requestedBook.getStatus());
 		}
-
-		return bookRepository.save(book);
+        Book updatedBook = bookRepository.save(requestedBook);
+		return BookTransformer.transformBookToBookJson(updatedBook);
 	}
 
 	public void deleteBook(String bookId) {
@@ -74,22 +71,23 @@ public class BookService {
 		bookRepository.save(existing);
 	}
 
-	public Book increaseCount(String bookId, int count) {
+	public BookJson increaseCount(String bookId, int count) {
 		return updateCount(bookId, count);
 	}
 
-	public Book decreaseCount(String bookId, int count) {
+	public BookJson decreaseCount(String bookId, int count) {
 		return updateCount(bookId, -count);
 	}
 
-	public List<Book> searchBooksByName(String bookName) {
-		return bookRepository.findBookByBookName(bookName);
+	public List<BookJson> searchBooksByName(String bookName) {
+        List<Book> foundBooks = bookRepository.findBookByBookName(bookName);
+		return BookTransformer.transformBookListToBookJsonList(foundBooks);
 	}
 
-	public List<Book> uploadBooksFromCSV(UploadCsvRequest request) {
+	public List<BookJson> uploadBooksFromCSV(UploadCsvRequest request) {
 		try {
 			List<Book> booksFromCsv = CSVUtil.readCsv(request.getCsvPath());
-			return addMultipleBooks(booksFromCsv, request.getUser());
+			return addMultipleBooks(booksFromCsv);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
@@ -97,33 +95,33 @@ public class BookService {
 
 	}
 
-	private Book addBook(Book book, User user) {
-		AuthenticatedUser authenticatedUser = null;
+	private Book doAddBook(Book book) {
+//		AuthenticatedUser authenticatedUser = null;
 		
 		// authenticatedUser = userServiceRepository.authenticate(user);
 		
-		authenticatedUser = new AuthenticatedUser();
-		authenticatedUser.setUserName("");
-		authenticatedUser.setUserStatus(ApplicationCommonConstants.USER_STATUS_CODE_ACTIVE);
-		authenticatedUser.setUserRight(ApplicationCommonConstants.USER_RIGHT_A);
-		
-		if (!authenticatedUser.isActive()) {
-			throw new InactiveUserException();
-		}
-		if (authenticatedUser.isAdmin()) {
+//		authenticatedUser = new AuthenticatedUser();
+//		authenticatedUser.setUserName("");
+//		authenticatedUser.setUserStatus(ApplicationCommonConstants.USER_STATUS_CODE_ACTIVE);
+//		authenticatedUser.setUserRight(ApplicationCommonConstants.USER_RIGHT_A);
+
+//		if (!authenticatedUser.isActive()) {
+//			throw new InactiveUserException();
+//		}
+//		if (authenticatedUser.isAdmin()) {
 			prepareBookForAdd(book);
 			return bookRepository.save(book);
-		}
-		throw new InsufficientPrivilageException();
+//		}
+//		throw new InsufficientPrivilageException();
 	}
 
-	private List<Book> addMultipleBooks(List<Book> booksFromCsv, User user) {
-		AuthenticatedUser authenticatedUser = userServiceRepository.authenticate(user);
-		if (!authenticatedUser.isActive()) {
-			throw new InactiveUserException();
-		}
+	private List<BookJson> addMultipleBooks(List<Book> booksFromCsv) {
+//		AuthenticatedUser authenticatedUser = userServiceRepository.authenticate(user);
+//		if (!authenticatedUser.isActive()) {
+//			throw new InactiveUserException();
+//		}
 
-		if (authenticatedUser.isAdmin()) {
+//		if (authenticatedUser.isAdmin()) {
 			List<Book> toBeAdded = new ArrayList<>();
 			booksFromCsv.forEach(book -> {
 				try {
@@ -133,9 +131,10 @@ public class BookService {
 					e.printStackTrace();
 				}
 			});
-			return bookRepository.saveAll(toBeAdded);
-		}
-		throw new InsufficientPrivilageException();
+        List<Book> savedBooks = bookRepository.saveAll(toBeAdded);
+			return BookTransformer.transformBookListToBookJsonList(savedBooks);
+//		}
+//		throw new InsufficientPrivilageException();
 	}
 	
 	private void prepareBookForAdd(Book book) {
@@ -151,9 +150,9 @@ public class BookService {
 		if (foundAuthor != null) {
 			book.setAuthor(foundAuthor);
 			Optional<Book> searchResult = bookRepository.findBookByBookNameAndAuthor(book.getBookName(), foundAuthor);
-			if (searchResult.isPresent()) {
-				throw new DuplicateBookException(book.getBookName(), book.getAuthor().getAuthorName());
-			}
+
+			if (searchResult.isPresent())
+                throw new DuplicateBookException(book.getBookName(), book.getAuthor().getAuthorName());
 		}
 	}
 
@@ -165,15 +164,15 @@ public class BookService {
 		return null;
 	}
 
-	private Book updateCount(String bookId, int countToUpdate) {
+	private BookJson updateCount(String bookId, int countToUpdate) {
 		Book existing = getBookById(bookId);
 		int currentStock = existing.getStockAvailable();
 		int remainingStock = currentStock + countToUpdate;
 		remainingStock = remainingStock < 1 ? 0 : remainingStock;
 
 		existing.setStockAvailable(remainingStock);
-
-		return bookRepository.save(existing);
+        Book updatedBook = bookRepository.save(existing);
+		return BookTransformer.transformBookToBookJson(updatedBook);
 	}
 
 	private void setBookStatus(Book book, String statusCode) {

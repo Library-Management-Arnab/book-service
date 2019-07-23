@@ -1,4 +1,4 @@
-package com.lms.bs.rest.model;
+package com.lms.bs.rest.model.entity;
 
 import java.io.Serializable;
 import java.util.List;
@@ -22,11 +22,11 @@ public class Author implements Serializable {
 	private static final long serialVersionUID = -6276686600843230458L;
 
 	public Author() {
-		this.authorId = "AU" + (System.currentTimeMillis() + ApplicationCommonConstants.RANDOM.nextInt());
+		this.authorId = "AU" + ApplicationCommonConstants.generateId();
 	}
 
 	@Id
-	@Column(name = "author_id", length = 20)
+	@Column(name = "author_id", length = 30)
 	private String authorId;
 
 	@Column(length = 100, nullable = false, unique = true)
