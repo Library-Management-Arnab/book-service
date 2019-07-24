@@ -17,7 +17,8 @@ public final class GenreTransformer {
         ROMANCE("ROMN", "ROMANCE"),
         THRILLER("THRL", "THRILLER"),
         MYSTERY("MYST", "MYSTERY"),
-        DETECTIVE_STORY("DETC", "DETECTIVE_STORY");
+        DETECTIVE_STORY("DETC", "DETECTIVE_STORY"),
+        NATURE("NATR", "NATURE_AND_WILDLIFE");
 
         String clientGenre;
         String dbCode;
