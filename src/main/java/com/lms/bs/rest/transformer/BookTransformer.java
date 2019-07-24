@@ -28,8 +28,8 @@ public final class BookTransformer {
         bookJson.setIsbn(book.getBookId());
         bookJson.setBookName(book.getBookName());
         bookJson.setBookDescription(book.getBookDescription());
-        bookJson.setImageUrl(bookJson.getImageUrl());
-        bookJson.setWikiUrl(bookJson.getWikiUrl());
+        bookJson.setImageUrl(book.getImageUrl());
+        bookJson.setWikiUrl(book.getWikiUrl());
         bookJson.setStockAvailable(book.getStockAvailable());
 
         bookJson.setAuthor(AuthorTransformer.transformAuthorToAuthorJson(book.getAuthor()));

@@ -13,9 +13,12 @@ public class BookJson {
 	private String bookName;
 	private String bookDescription;
 	private AuthorJson author;
+	
+	// This field will only be read from user
+	@JsonProperty(access = Access.WRITE_ONLY)
 	private int quantity;
 
-	// This field will only be read from JSON
+	// This field will only be read from response
 	@JsonProperty(access = Access.READ_ONLY)
 	private int stockAvailable;
 

@@ -16,6 +16,8 @@ import com.lms.bs.rest.model.json.BookJson;
 import com.lms.bs.rest.repository.AuthorRepository;
 import com.lms.bs.rest.repository.BookRepository;
 import com.lms.bs.rest.repository.BookStatusRepository;
+import com.lms.bs.rest.repository.GenreRepository;
+import com.lms.bs.rest.repository.LanguageRepository;
 import com.lms.bs.rest.service.util.CSVUtil;
 import com.lms.bs.rest.transformer.BookTransformer;
 import com.lms.svc.common.constants.ApplicationCommonConstants;
@@ -29,6 +31,8 @@ public class BookService {
 	private BookRepository bookRepository;
 	private AuthorRepository authorRepository;
 	private BookStatusRepository bookStatusRepository;
+	private GenreRepository genreRepository;
+	private LanguageRepository languageRepository;
 
 	public List<BookJson> getAllBooks() {
 		List<Book> allBooks = bookRepository.findAll();
@@ -41,24 +45,49 @@ public class BookService {
 
 	public BookJson addBook(BookJson json) {
 		json.setAvailability("Available");
-		Book addedBook = doAddBook(BookTransformer.transformBookJsonToBook(json));
+		
+		if(json.getGenre() != null) {
+			validateGenre(json.getGenre());
+		}
+		validateLanguage(json.getLanguage());
+		
+		Book toBeAdded = BookTransformer.transformBookJsonToBook(json);
+		toBeAdded.setStockAvailable(json.getQuantity());
+		Book addedBook = doAddBook(toBeAdded);
 		return BookTransformer.transformBookToBookJson(addedBook);
 	}
 
 	public BookJson updateBook(String bookId, BookJson bookJson) {
-	    Book requestedBook = BookTransformer.transformBookJsonToBook(bookJson);
+		if(bookJson.getGenre() != null) {
+			validateGenre(bookJson.getGenre());
+		}
+		validateLanguage(bookJson.getLanguage());
+		
+		Book requestedBook = BookTransformer.transformBookJsonToBook(bookJson);
 
-		Book existing = searchBookById(bookId);
-        requestedBook.setStockAvailable(existing.getStockAvailable());
+		Author author = verifyExistingAuthor(requestedBook.getAuthor());
+
+		if (author != null) {
+			requestedBook.setAuthor(author);
+		}
+
+		Book existingBook = searchBookById(bookId);
+
+		requestedBook.setBookId(existingBook.getBookId());
+		requestedBook.setStockAvailable(existingBook.getStockAvailable());
+		if (requestedBook.getStockDate() == null) {
+			requestedBook.setStockDate(existingBook.getStockDate());
+		}
+
 		BookStatus status = requestedBook.getStatus();
 		Optional<BookStatus> currentStatus = bookStatusRepository.findByStatus(status.getStatus());
 
 		if (currentStatus.isPresent()) {
-            requestedBook.setStatus(currentStatus.get());
+			requestedBook.setStatus(currentStatus.get());
 		} else {
-			throwExceptionForInvalidStatus(requestedBook.getStatus());
+			validateBookStatus(requestedBook.getStatus().getStatus());
 		}
-        Book updatedBook = bookRepository.save(requestedBook);
+		Book updatedBook = bookRepository.save(requestedBook);
 		return BookTransformer.transformBookToBookJson(updatedBook);
 	}
 
@@ -78,7 +107,7 @@ public class BookService {
 	}
 
 	public List<BookJson> searchBooksByName(String bookName) {
-        List<Book> foundBooks = bookRepository.findBookByBookName(bookName);
+		List<Book> foundBooks = bookRepository.findBookByBookName(bookName);
 		return BookTransformer.transformBookListToBookJsonList(foundBooks);
 	}
 
@@ -91,7 +120,7 @@ public class BookService {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	private Book searchBookById(String bookId) {
 		Optional<Book> searchResult = bookRepository.findById(bookId);
 		if (searchResult.isPresent()) {
@@ -99,7 +128,7 @@ public class BookService {
 		}
 		throw new NoSuchBookException();
 	}
-	
+
 	private Book doAddBook(Book book) {
 		prepareBookForAdd(book);
 		return bookRepository.save(book);
@@ -118,7 +147,7 @@ public class BookService {
 		List<Book> savedBooks = bookRepository.saveAll(toBeAdded);
 		return BookTransformer.transformBookListToBookJsonList(savedBooks);
 	}
-	
+
 	private void prepareBookForAdd(Book book) {
 		validateDuplicateAndUpdateAuthor(book);
 		book.setStockDate(ApplicationCommonConstants.getCurrentDateAsString());
@@ -134,7 +163,7 @@ public class BookService {
 			Optional<Book> searchResult = bookRepository.findBookByBookNameAndAuthor(book.getBookName(), foundAuthor);
 
 			if (searchResult.isPresent())
-                throw new DuplicateBookException(book.getBookName(), book.getAuthor().getAuthorName());
+				throw new DuplicateBookException(book.getBookName(), book.getAuthor().getAuthorName());
 		}
 	}
 
@@ -153,7 +182,7 @@ public class BookService {
 		remainingStock = remainingStock < 1 ? 0 : remainingStock;
 
 		existing.setStockAvailable(remainingStock);
-        Book updatedBook = bookRepository.save(existing);
+		Book updatedBook = bookRepository.save(existing);
 		return BookTransformer.transformBookToBookJson(updatedBook);
 	}
 
@@ -163,8 +192,28 @@ public class BookService {
 		book.setStatus(status);
 	}
 
-	private void throwExceptionForInvalidStatus(BookStatus status) {
+	private void throwInvalidFieldValueException(String fieldName, String input, List<String> validValues) {
+		throw new InvalidFieldValueException(fieldName, input, validValues);
+	}
+	
+	private void validateBookStatus(String status) {
 		List<String> validStatuses = bookStatusRepository.findAllStatus();
-		throw new InvalidFieldValueException("Book Status", status.getStatus(), validStatuses);
+		throwInvalidFieldValueException("Book Status", status, validStatuses);
+	}
+	
+	private void validateGenre(String inputGenre) {
+		List<String> allGenres = genreRepository.findAllDescriptions();
+		Optional<String> foundGenre = allGenres.parallelStream().filter(genre -> genre.equalsIgnoreCase(inputGenre)).findAny();
+		if(! foundGenre.isPresent()) {
+			throwInvalidFieldValueException("Genre", inputGenre, allGenres);
+		}
+	}
+
+	private void validateLanguage(String inputLanguage) {
+		List<String> allLanguages = languageRepository.findAllLangNames();
+		Optional<String> foundLanguage = allLanguages.parallelStream().filter(language -> language.equalsIgnoreCase(inputLanguage)).findAny();
+		if(! foundLanguage.isPresent()) {
+			throwInvalidFieldValueException("Language", inputLanguage, allLanguages);
+		}
 	}
 }
