@@ -19,7 +19,7 @@ public class CSVUtil {
 		Reader reader = new FileReader(path);
 		CSVFormat csvFormat = CSVFormat.DEFAULT
 				.withFirstRecordAsHeader()
-				.withHeader("BookName", "Author", "Description", "StockAvailable", "WikiUrl", "ImageUrl", "Genere", "Language");
+				.withHeader("BookName", "Author", "Description", "StockAvailable", "WikiUrl", "ImageUrl", "Genre", "Language");
 		CSVParser csvParser = new CSVParser(reader , csvFormat);
 		
 		List<Book> books = new ArrayList<>();

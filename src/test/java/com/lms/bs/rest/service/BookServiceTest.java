@@ -2,18 +2,15 @@ package com.lms.bs.rest.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -22,7 +19,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.lms.bs.rest.exception.DuplicateBookException;
-import com.lms.bs.rest.exception.InvalidBookStatusException;
 import com.lms.bs.rest.exception.NoSuchBookException;
 import com.lms.bs.rest.model.UploadCsvRequest;
 import com.lms.bs.rest.model.entity.Author;
@@ -160,14 +156,83 @@ public class BookServiceTest {
 	}
 
 	@Test
-	@Ignore
+	@SuppressWarnings("unchecked")
 	public void testUploadCSV() throws Exception {
 		UploadCsvRequest request = new UploadCsvRequest();
 		ClassLoader classLoader = this.getClass().getClassLoader();
 		String filePath = classLoader.getResource("books.csv").getFile();
 		request.setCsvPath(filePath);
-		
+
+		when(bookRepository.saveAll(any(Iterable.class)))
+				.thenReturn(Arrays.asList(prepareSampleBook_1(), prepareSampleBook_2()));
+
+		List<BookJson> savedBooks = bookService.uploadBooksFromCSV(request);
+		assertNotNull(savedBooks);
+		assertEquals(2, savedBooks.size());
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testUploadCSVDuplicateBookException() throws Exception {
+		UploadCsvRequest request = new UploadCsvRequest();
+		ClassLoader classLoader = this.getClass().getClassLoader();
+		String filePath = classLoader.getResource("books.csv").getFile();
+		request.setCsvPath(filePath);
+
+		when(authorRepository.findByAuthorName(anyString())).thenReturn(Optional.of(prepareSampleAuthor_1()));
+		when(bookRepository.findBookByBookNameAndAuthor(anyString(), any(Author.class)))
+				.thenReturn(Optional.of(prepareSampleBook_1()), Optional.empty());
+
+		when(bookRepository.saveAll(any(Iterable.class))).thenReturn(Arrays.asList(prepareSampleBook_2()));
+
+		List<BookJson> savedBooks = bookService.uploadBooksFromCSV(request);
+		assertNotNull(savedBooks);
+		assertEquals(1, savedBooks.size());
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testUploadCSVParsingException() throws Exception {
+		UploadCsvRequest request = new UploadCsvRequest();
+		String filePath = "some_wrong_file_path";
+		request.setCsvPath(filePath);
+
 		bookService.uploadBooksFromCSV(request);
+	}
+
+	@Test
+	public void testIncreaseCount() {
+		when(bookRepository.findById(anyString())).thenReturn(Optional.of(prepareSampleBook_1()));
+
+		Book mockedResponse = prepareSampleBook_1();
+		mockedResponse.setStockAvailable(3);
+		when(bookRepository.save(any(Book.class))).thenReturn(mockedResponse);
+
+		BookJson response = bookService.increaseCount("B002", 2);
+		assertNotNull(response);
+		assertEquals(3, response.getStockAvailable());
+	}
+
+	@Test
+	public void testDecreaseCount() {
+		when(bookRepository.findById(anyString())).thenReturn(Optional.of(prepareSampleBook_1()));
+
+		Book mockedResponse = prepareSampleBook_1();
+		mockedResponse.setStockAvailable(0);
+		when(bookRepository.save(any(Book.class))).thenReturn(mockedResponse);
+
+		BookJson response = bookService.decreaseCount("B002", 2);
+		assertNotNull(response);
+		assertEquals(0, response.getStockAvailable());
+	}
+
+	@Test
+	public void testSearchBooksByName() {
+		when(bookRepository.findBookByBookName(anyString()))
+				.thenReturn(Arrays.asList(prepareSampleBook_1(), prepareSampleBook_2()));
+
+		List<BookJson> foundBooks = bookService.searchBooksByName("Romeo and Juliet");
+		assertNotNull(foundBooks);
+		assertEquals(2, foundBooks.size());
 	}
 
 	private BookJson prepareSampleBookJson_1() {
@@ -217,9 +282,10 @@ public class BookServiceTest {
 		return author;
 	}
 
+	@SuppressWarnings("unused")
 	private BookJson prepareSampleBookJson_2() {
 		BookJson bookJson = new BookJson();
-		bookJson.setAuthor(prepareSampleAuthorJson_1());
+		bookJson.setAuthor(prepareSampleAuthorJson_2());
 		bookJson.setBookDescription("Romeo and Juliet");
 		bookJson.setBookName("Romeo and Juliet");
 		bookJson.setGenre("ROMMANCE");

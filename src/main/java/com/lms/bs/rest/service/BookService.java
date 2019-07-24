@@ -1,5 +1,11 @@
 package com.lms.bs.rest.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
 import com.lms.bs.rest.exception.DuplicateBookException;
 import com.lms.bs.rest.exception.NoSuchBookException;
 import com.lms.bs.rest.model.UploadCsvRequest;
@@ -14,13 +20,8 @@ import com.lms.bs.rest.service.util.CSVUtil;
 import com.lms.bs.rest.transformer.BookTransformer;
 import com.lms.svc.common.constants.ApplicationCommonConstants;
 import com.lms.svc.common.exception.InvalidFieldValueException;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
@@ -85,11 +86,10 @@ public class BookService {
 		try {
 			List<Book> booksFromCsv = CSVUtil.readCsv(request.getCsvPath());
 			return addMultipleBooks(booksFromCsv);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
-
 	}
 	
 	private Book searchBookById(String bookId) {
