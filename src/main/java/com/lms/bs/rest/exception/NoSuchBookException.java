@@ -14,7 +14,7 @@ public class NoSuchBookException extends ApplicationError {
 	private final int errorCode;
 
 	public NoSuchBookException() {
-		this.httpStatus = HttpStatus.FORBIDDEN;
+		this.httpStatus = HttpStatus.NOT_FOUND;
 		this.message = ApplicationCommonConstants.NO_SUCH_BOOK_ERROR_MESSAGE;
 		this.errorCode = ApplicationCommonConstants.NO_SUCH_BOOK_ERROR_CODE;
 		this.errorTime = ApplicationCommonConstants.getCurrentDateAsString();
