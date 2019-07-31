@@ -1,20 +1,28 @@
 package com.lms.bs.rest.service.util;
 
-import com.lms.bs.rest.model.entity.Author;
-import com.lms.bs.rest.model.entity.Book;
-import com.lms.bs.rest.transformer.GenreTransformer;
-import com.lms.bs.rest.transformer.LanguageTransformer;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.springframework.stereotype.Component;
+
+import com.lms.bs.rest.model.entity.Author;
+import com.lms.bs.rest.model.entity.Book;
+import com.lms.bs.rest.transformer.BookTransformer;
+
+import lombok.AllArgsConstructor;
+@Component
+@AllArgsConstructor
 public class CSVUtil {
+	private BookTransformer bookTransformer;
 	
-	public static List<Book> readCsv(String path) throws IOException {
+	public List<Book> readCsv(String path) throws IOException {
 		InputStream is = new FileInputStream(path);
 		Reader reader = new FileReader(path);
 		CSVFormat csvFormat = CSVFormat.DEFAULT
@@ -41,8 +49,8 @@ public class CSVUtil {
 			book.setWikiUrl(trim(csvRecord.get("WikiUrl")));
 			book.setImageUrl(trim(csvRecord.get("ImageUrl")));
 
-			book.setGenre(GenreTransformer.getGenre(trim(csvRecord.get("Genre"))));
-			book.setLanguage(LanguageTransformer.getLanguageFromClientLanguage(trim(csvRecord.get("Language"))));
+			book.setGenre(bookTransformer.getGenreFromClient(trim(csvRecord.get("Genre"))));
+			book.setLanguage(bookTransformer.getLanguageFromClient(trim(csvRecord.get("Language"))));
 
 			books.add(book);
 		});
@@ -53,9 +61,5 @@ public class CSVUtil {
 	}
 	private static String trim(String str) {
 		return str == null ? null : str.trim();
-	}
-	public static void main(String[] args) throws Exception {
-		String path = "C:\\Users\\Priyanka\\Desktop\\books.csv";
-		System.out.println(String.join(System.lineSeparator(), readCsv(path).stream().map(book -> book.toString()).collect(Collectors.toList())));
 	}
 }

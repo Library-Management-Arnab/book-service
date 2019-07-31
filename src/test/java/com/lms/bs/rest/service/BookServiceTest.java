@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.lms.bs.rest.config.StaticDataLoader;
 import com.lms.bs.rest.exception.DuplicateBookException;
 import com.lms.bs.rest.exception.NoSuchBookException;
 import com.lms.bs.rest.model.UploadCsvRequest;
@@ -29,9 +30,7 @@ import com.lms.bs.rest.model.json.BookJson;
 import com.lms.bs.rest.repository.AuthorRepository;
 import com.lms.bs.rest.repository.BookRepository;
 import com.lms.bs.rest.repository.BookStatusRepository;
-import com.lms.bs.rest.transformer.BookStatusTransformer;
-import com.lms.bs.rest.transformer.GenreTransformer;
-import com.lms.bs.rest.transformer.LanguageTransformer;
+import com.lms.bs.rest.transformer.BookTransformer;
 import com.lms.svc.common.exception.InvalidFieldValueException;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -42,13 +41,17 @@ public class BookServiceTest {
 	private AuthorRepository authorRepository;
 	@Mock
 	private BookStatusRepository bookStatusRepository;
-
+	@Mock
+	private BookTransformer bookTransformer;
+	@Mock
+	private StaticDataLoader staticDataLoader;
+	
 	@InjectMocks
 	private BookService bookService;
+	
 
 	@Before
 	public void setup() throws Exception {
-
 	}
 
 	@Test
@@ -263,9 +266,11 @@ public class BookServiceTest {
 		book.setAuthor(prepareSampleAuthor_1());
 		book.setBookDescription("Romeo and Juliet");
 		book.setBookName("Romeo and Juliet");
-		book.setGenre(GenreTransformer.getGenre("ROMMANCE"));
-		book.setLanguage(LanguageTransformer.getLanguageFromClientLanguage("ENGLISH"));
-		book.setStatus(BookStatusTransformer.getBookStatusFromClient("AVAILABLE"));
+		
+		book.setGenre(bookTransformer.getGenreFromClient("ROMMANCE"));
+		book.setLanguage(bookTransformer.getLanguageFromClient("ENGLISH"));
+		book.setStatus(bookTransformer.getBookStatusFromClient("AVAILABLE"));
+		
 		book.setStockAvailable(10);
 		book.setStockDate("23-Jul-2019 @ 19:45:18");
 
@@ -311,9 +316,11 @@ public class BookServiceTest {
 		book.setAuthor(prepareSampleAuthor_1());
 		book.setBookDescription("Romeo and Juliet");
 		book.setBookName("Romeo and Juliet");
-		book.setGenre(GenreTransformer.getGenre("ROMMANCE"));
-		book.setLanguage(LanguageTransformer.getLanguageFromClientLanguage("ENGLISH"));
-		book.setStatus(BookStatusTransformer.getBookStatusFromClient("AVAILABLE"));
+		
+		book.setGenre(bookTransformer.getGenreFromClient("ROMMANCE"));
+		book.setLanguage(bookTransformer.getLanguageFromClient("ENGLISH"));
+		book.setStatus(bookTransformer.getBookStatusFromClient("AVAILABLE"));
+		
 		book.setStockAvailable(10);
 		book.setStockDate("23-Jul-2019 @ 19:45:18");
 

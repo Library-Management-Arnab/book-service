@@ -32,7 +32,7 @@ public class BookServiceRestController {
 	}
 
 	@ApiOperation(value = "Add new book to the library", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, response = ResponseEntity.class, httpMethod = "POST")
-	@ApiResponses({ @ApiResponse(code = 200, message = "Successfully added book"),
+	@ApiResponses({ @ApiResponse(code = 201, message = "Successfully added book"),
 			@ApiResponse(code = 400, message = "Invalid request"),
 			@ApiResponse(code = 403, message = "User not authorized to perform this operation"),
 			@ApiResponse(code = 409, message = "Duplicate book."),
