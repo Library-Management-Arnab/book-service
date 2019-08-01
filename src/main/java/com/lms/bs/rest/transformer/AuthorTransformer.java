@@ -1,11 +1,14 @@
 package com.lms.bs.rest.transformer;
 
+import org.springframework.stereotype.Component;
+
 import com.lms.bs.rest.model.entity.Author;
 import com.lms.bs.rest.model.json.AuthorJson;
 
-public final class AuthorTransformer {
+@Component
+public class AuthorTransformer {
 
-    public static Author transformAuthorJsonToAuthor(AuthorJson authorJson) {
+    public Author transformAuthorJsonToAuthor(AuthorJson authorJson) {
         Author author = new Author();
         author.setAuthorName(authorJson.getAuthorName());
         author.setBio(authorJson.getBio());
@@ -17,7 +20,7 @@ public final class AuthorTransformer {
         return author;
     }
 
-    public static AuthorJson transformAuthorToAuthorJson(Author author) {
+    public AuthorJson transformAuthorToAuthorJson(Author author) {
         AuthorJson authorJson = new AuthorJson();
         authorJson.setAuthorId(author.getAuthorId());
         authorJson.setAuthorName(author.getAuthorName());
