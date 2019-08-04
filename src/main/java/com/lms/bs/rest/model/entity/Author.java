@@ -10,7 +10,6 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lms.svc.common.constants.ApplicationCommonConstants;
 
 import lombok.Data;
@@ -48,7 +47,6 @@ public class Author implements Serializable {
 	private String imageUrl;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "author")
-	@JsonIgnore
 	private List<Book> books;
 
 	@Override
