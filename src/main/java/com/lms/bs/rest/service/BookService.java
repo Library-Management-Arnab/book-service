@@ -138,7 +138,7 @@ public class BookService {
 		Author foundAuthor = verifyExistingAuthor(book.getAuthor());
 		if (foundAuthor != null) {
 			book.setAuthor(foundAuthor);
-			Optional<Book> searchResult = bookRepository.findBookByBookNameAndAuthor(book.getBookName(), foundAuthor);
+			Optional<Book> searchResult = bookRepository.findBookByBookNameAndAuthor(book.getBookName(), foundAuthor.getAuthorName());
 
 			if (searchResult.isPresent())
 				throw new DuplicateBookException(book.getBookName(), book.getAuthor().getAuthorName());
