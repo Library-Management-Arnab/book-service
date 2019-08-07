@@ -57,7 +57,7 @@ public class StaticDataLoader extends BaseDataLoader {
 
 	public BookStatus getBookStatusFromClient(String clientStatus) {
 		Predicate<BookStatus> bookStatusPredicate = bookStatus -> bookStatus.getStatus().equalsIgnoreCase(clientStatus);
-		return returnOrThrow(bookStatusList, bookStatusPredicate, clientStatus, validBookStatuses, "Availibility");
+		return returnOrThrow(bookStatusList, bookStatusPredicate, clientStatus, validBookStatuses, "Availability");
 	}
 
 	public Genre getGenreFromClient(String description) {
