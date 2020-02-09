@@ -14,7 +14,8 @@ public class DuplicateBookException extends ApplicationError {
 	private final int errorCode;
 
 	public DuplicateBookException(String bookName, String author) {
-		this.message = String.format("Book [%s] by [%s] already exists.", bookName, author);
+		super(String.format("Book [%s] by [%s] already exists.", bookName, author));
+		this.message = super.getMessage();
 		this.httpStatus = HttpStatus.CONFLICT;
 		this.errorCode = ApplicationCommonConstants.DUPLICATE_BOOK_ERROR_CODE;
 		this.errorTime = ApplicationCommonConstants.getCurrentDateAsString();

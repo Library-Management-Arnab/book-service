@@ -89,7 +89,7 @@ public class BookServiceTest {
 		Book sampleBook = prepareSampleBook_1();
 		Author sampleAuthor = prepareSampleAuthor_2();
 		when(authorRepository.findByAuthorName(anyString())).thenReturn(Optional.of(sampleAuthor));
-		when(bookRepository.findBookByBookNameAndAuthor(anyString(), any(Author.class)))
+		when(bookRepository.findBookByBookNameAndAuthor(anyString(), any(String.class)))
 				.thenReturn(Optional.of(sampleBook));
 
 		bookService.addBook(prepareSampleBookJson_1());
@@ -183,7 +183,7 @@ public class BookServiceTest {
 		request.setCsvPath(filePath);
 
 		when(authorRepository.findByAuthorName(anyString())).thenReturn(Optional.of(prepareSampleAuthor_1()));
-		when(bookRepository.findBookByBookNameAndAuthor(anyString(), any(Author.class)))
+		when(bookRepository.findBookByBookNameAndAuthor(anyString(), any(String.class)))
 				.thenReturn(Optional.of(prepareSampleBook_1()), Optional.empty());
 
 		when(bookRepository.saveAll(any(Iterable.class))).thenReturn(Arrays.asList(prepareSampleBook_2()));
